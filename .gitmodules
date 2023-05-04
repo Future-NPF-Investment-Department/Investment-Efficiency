@@ -1,0 +1,6 @@
+[submodule "modules/InvestmentDataContext"]
+	path = modules/InvestmentDataContext
+	url = https://github.com/Future-NPF-Investment-Department/Investment-Data-Context.git
+[submodule "modules/RuDataApi"]
+	path = modules/RuDataApi
+	url = https://github.com/Future-NPF-Investment-Department/RuData-API.git

@@ -9,7 +9,7 @@
 
 ## Использование
 
-```
+```cs
 using InvestmentEfficiency;
 using InvestmentDataContext;
 using InvestmentDataContext.Classifications;

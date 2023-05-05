@@ -20,7 +20,13 @@ namespace InvestmentEfficiency
         {
             _query = query;        
             _details = details;
-        }     
+        }
+
+        public EfficiencyQuery(IQueryable<EfficiencyRecord> query)
+        {
+            _query = query;
+            _details = new();
+        }
 
         public Type ElementType 
             => _query.ElementType;

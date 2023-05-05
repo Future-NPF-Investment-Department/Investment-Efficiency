@@ -6,9 +6,9 @@
     public static class EfficiencyExtensions
     {
         /// <summary>
-        ///     Casts IQuerable of EfficiencyRecord to EfficiencyQuery.
+        ///     Casts IQuerable of <see cref="EfficiencyRecord"/> to <see cref="EfficiencyQuery"/>.
         /// </summary>
-        public static EfficiencyQuery AsEfficiencyQuery(IQueryable<EfficiencyRecord> query)        
+        public static EfficiencyQuery AsEfficiencyQuery(this IQueryable<EfficiencyRecord> query)        
             => new EfficiencyQuery(query);
         
     }

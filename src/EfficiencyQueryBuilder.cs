@@ -195,6 +195,16 @@ namespace InvestmentEfficiency
         }
 
         /// <summary>
+        ///     Configures flows transition types which are used in efficiency calculation.
+        /// </summary>
+        /// <param name="transitionType">Flows transition type.</param>
+        public EfficiencyQueryBuilder WithTransType(params TransType[]? transitionTypes)
+        {
+            _flows.WithTransType(transitionTypes);
+            return this;
+        }
+
+        /// <summary>
         ///     Generates query for time series of <see cref="EfficiencyRecord"/>.
         /// </summary>
         public EfficiencyQuery GenerateQuery()

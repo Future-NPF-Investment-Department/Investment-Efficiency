@@ -9,7 +9,7 @@
 
 ## Использование
 
-```cs
+```csharp
 using InvestmentEfficiency;
 using InvestmentDataContext;
 using InvestmentDataContext.Classifications;

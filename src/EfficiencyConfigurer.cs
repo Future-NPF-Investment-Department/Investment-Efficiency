@@ -188,8 +188,11 @@
 
             double CalculateGrowth(double portfolio, double flow, double commision)
             {
-                if (Math.Floor(portfolio / 1000) - Math.Floor(flow / 1000) is 0.0
+                if (Math.Floor(portfolio / 1000) > 10
+                    && Math.Floor(portfolio / 1000) - Math.Floor(flow / 1000) is 0.0
                     || prevPortfolio is null) return 1.0;
+
+                //if(prevPortfolio is null) return 1.0;
 
                 return (portfolio - flow - commision) / prevPortfolio.Value;
             }

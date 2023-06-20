@@ -13,10 +13,12 @@ namespace InvestmentEfficiency
         private readonly FlowsQueryBuilder _flows;
         private readonly EfficiencyQueryDetails _details;
 
-        public EfficiencyQueryBuilder(InvestmentData context)
+        public EfficiencyQueryBuilder(string? connectionString)
         {
-            _assets = InvestmentDataQuery.NewAssetsQuery(context);
-            _flows = InvestmentDataQuery.NewFlowsQuery(context);
+            if (connectionString is not null)
+                InvestmentDataManager.UseConnectionString(connectionString);
+            _assets = InvestmentDataManager.NewAssetsQuery();
+            _flows = InvestmentDataManager.NewFlowsQuery();
             _details = new EfficiencyQueryDetails();
         }
 

@@ -13,6 +13,7 @@ namespace InvestmentEfficiency
     /// </remarks>
     public class EfficiencyQuery : IQueryable<EfficiencyRecord>
     {
+        private static string? _connstr;
         private readonly IQueryable<EfficiencyRecord> _query;
         private readonly EfficiencyQueryDetails _details;
 
@@ -38,10 +39,17 @@ namespace InvestmentEfficiency
             => _query.Provider;
 
         /// <summary>
+        ///     Sets connection string for efficiency queries.
+        /// </summary>
+        /// <param name="connString"></param>
+        public static void UseConnectionString(string connString)
+            => _connstr = connString;
+
+        /// <summary>
         ///     Initializes new efficiency query configuration.
         /// </summary>
-        public static EfficiencyQueryBuilder ConfigureNew(InvestmentData context)
-            => new(context);
+        public static EfficiencyQueryBuilder ConfigureNew()
+            => new(_connstr);
 
         public IEnumerator<EfficiencyRecord> GetEnumerator()
             => _query.GetEnumerator();

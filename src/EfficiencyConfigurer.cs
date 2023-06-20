@@ -1,4 +1,6 @@
-﻿namespace InvestmentEfficiency
+﻿using RuDataAPI;
+
+namespace InvestmentEfficiency
 {
     /// <summary>
     ///     Efficiency calculation configurer.
@@ -16,6 +18,8 @@
         private Func<double>? _twrCalcHandler;
         private Func<double>? _mwrCalcHandler;
         private Func<double>? _stdCalcHandler;
+        private Func<double>? _shrCalcHandler;
+        private Func<double>? _infCalcHandler;
 
         /// <summary>
         ///     Initializes efficiency configurer using info from <see cref="EfficiencyQuery"/>.
@@ -25,10 +29,19 @@
         {
             _effQuery = effQuery;
             _eff = new Efficiency();
+            _eff.Details = _effQuery.GetDetails();
             _effSeries = CalculateGrowthRates().ToList();
             _stage |= CalculationStage.GrrCalcQueued;
         }
-        
+        /// <summary>
+        ///     Initializes efficiency configurer using info from <see cref="EfficiencyQuery"/>. 
+        /// </summary>
+        /// <param name="effQuery">Efficiency query.</param>
+        public EfficiencyConfigurer(EfficiencyQuery effQuery, EfficiencyBenchmarks benchmarks) : this(effQuery)
+        {
+            _eff.Benchmarks = benchmarks;
+        }
+
         /// <summary>
         ///     Adds life-time to efficiency calculation.
         /// </summary>
@@ -53,12 +66,14 @@
             {
                 EfficiencyRecord first = _effSeries.First();
 
-                var inc = _effSeries.Last().Portfolio!.Value 
+                var inc = _effSeries.Last().Portfolio!.Value
+                    - first.Portfolio!.Value
                     - _effSeries.Sum(effs => effs.Flow!.Value)
-                    - _effSeries.Sum(effs => effs.Commision!.Value);
+                    - _effSeries.Sum(effs => effs.Commision!.Value)
+                    + first.Flow!.Value + first.Commision!.Value ;
 
-                if (first.Date.Day == 31 && first.Date.Month == 12)
-                    inc -= first.Portfolio!.Value + first.Flow!.Value;
+                //if (first.Date.Day == 31 && first.Date.Month == 12)
+                //    inc -= first.Portfolio!.Value + first.Flow!.Value;
                 
                 return inc;
             };
@@ -149,6 +164,43 @@
             return this;
         }
 
+
+        /// <summary>
+        ///     Adds Sharpe coefficient to calculation.
+        /// </summary>
+        public EfficiencyConfigurer AddSharpeCalculation(double riskFreeRate)
+        {
+            if (_effSeries.Count == 0) return this;
+
+            if (!_stage.HasFlag(CalculationStage.TwrCalcQueued | CalculationStage.StdCalcQueued))
+                throw new Exception("TWR and STD rates should be calculated before the Sharpe coefficient.");
+
+            _shrCalcHandler = () =>            
+                (_eff.Twr!.Value - riskFreeRate) / _eff.Std!.Value;
+            
+
+            return this;
+        }
+
+
+        /// <summary>
+        ///     Adds Information ratio to calculation.
+        /// </summary>
+        public EfficiencyConfigurer AddInformationRatioCalculation(double indexTwr)
+        {
+            if (_effSeries.Count == 0) return this;
+
+            if (!_stage.HasFlag(CalculationStage.TwrCalcQueued | CalculationStage.StdCalcQueued))
+                throw new Exception("TWR and STD rates should be calculated before the Sharpe coefficient.");
+
+            _infCalcHandler = () =>
+                (_eff.Twr!.Value - indexTwr) / _eff.Std!.Value;
+
+
+            return this;
+        }
+
+
         /// <summary>
         ///     Calculates investment efficiency.
         /// </summary>
@@ -156,8 +208,7 @@
         ///     Instance of <see cref="Efficiency"/> class.
         /// </returns>
         public Efficiency Calculate()
-        {
-            _eff.Details = _effQuery.GetDetails();
+        {            
             _eff.EfficiencySeries = _effSeries;
             _eff.LifeTime = _lftCalcHandler?.Invoke();
             _eff.Income = _incCalcHandler?.Invoke();
@@ -165,6 +216,8 @@
             _eff.Mwr = _mwrCalcHandler?.Invoke();
             _eff.Twr = _twrCalcHandler?.Invoke();
             _eff.Std = _stdCalcHandler?.Invoke();
+            _eff.SharpeRatio = _shrCalcHandler?.Invoke();
+            _eff.InformationRatio = _infCalcHandler?.Invoke();
             return _eff;
         }
 
@@ -190,7 +243,7 @@
             {
                 if (Math.Floor(portfolio / 1000) > 10
                     && Math.Floor(portfolio / 1000) - Math.Floor(flow / 1000) is 0.0
-                    || prevPortfolio is null) return 1.0;
+                    || prevPortfolio is null || prevPortfolio is 0.0) return 1.0;
 
                 //if(prevPortfolio is null) return 1.0;
 

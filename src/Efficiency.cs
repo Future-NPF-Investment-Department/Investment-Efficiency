@@ -1,4 +1,5 @@
 ﻿#pragma warning disable IDE0090
+using RuDataAPI;
 
 namespace InvestmentEfficiency
 {
@@ -32,6 +33,18 @@ namespace InvestmentEfficiency
         /// </summary>
         public int? LifeTime { get; set; }
         /// <summary>
+        ///     Sharpe coefficient.
+        /// </summary>
+        public double? SharpeRatio { get; set; }
+        /// <summary>
+        ///     Information ratio.
+        /// </summary>
+        public double? InformationRatio { get; set; }
+        /// <summary>
+        ///     Efficiency benchmarks.
+        /// </summary>
+        public EfficiencyBenchmarks? Benchmarks { get; set; }
+        /// <summary>
         ///     Efficiency subject reference data.
         /// </summary>
         public EfficiencyQueryDetails? Details { get; set; }
@@ -39,7 +52,7 @@ namespace InvestmentEfficiency
         ///     Initializes efficiency calculation configuration.
         /// </summary>
         public static EfficiencyConfigurer ConfigureEfficiencyCalculation(EfficiencyQuery query)
-            => new EfficiencyConfigurer(query);
+            => new EfficiencyConfigurer(query);        
         /// <summary>
         ///     Efficiency time series.
         /// </summary>

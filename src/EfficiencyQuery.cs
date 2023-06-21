@@ -49,7 +49,12 @@ namespace InvestmentEfficiency
         ///     Initializes new efficiency query configuration.
         /// </summary>
         public static EfficiencyQueryBuilder ConfigureNew()
-            => new(_connstr);
+        {
+            InvestmentData context = _connstr is not null
+                ? new InvestmentData(_connstr)
+                : new InvestmentData();
+            return new(context);
+        }
 
         public IEnumerator<EfficiencyRecord> GetEnumerator()
             => _query.GetEnumerator();

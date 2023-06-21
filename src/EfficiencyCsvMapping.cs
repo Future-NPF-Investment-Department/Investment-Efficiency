@@ -7,7 +7,7 @@ using CsvHelper;
 using CsvHelper.TypeConversion;
 using CsvHelper.Configuration;
 
-namespace InvestmentEfficiency.src
+namespace InvestmentEfficiency
 {
     public class EfficiencyCsvMapping : ClassMap<Efficiency>
     {

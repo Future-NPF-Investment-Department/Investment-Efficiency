@@ -31,5 +31,9 @@
         ///     Rate of return standard deviation calculation queued.
         /// </summary>
         StdCalcQueued = 1 << 5,
+        /// <summary>
+        ///     Calculation against benchamarks.
+        /// </summary>
+        HasBenchmarks = 1 << 6,
     }
 }

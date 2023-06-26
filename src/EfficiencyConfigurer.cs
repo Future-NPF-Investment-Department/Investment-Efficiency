@@ -1,4 +1,8 @@
-﻿using RuDataAPI;
+﻿#pragma warning disable IDE0017
+#pragma warning disable IDE1006
+
+using Microsoft.EntityFrameworkCore;
+using RuDataAPI;
 
 namespace InvestmentEfficiency
 {
@@ -7,6 +11,14 @@ namespace InvestmentEfficiency
     /// </summary>
     public class EfficiencyConfigurer
     {
+        private const CalculationStage GRR = CalculationStage.GrrCalcQueued;
+        private const CalculationStage LFT = CalculationStage.LftCalcQueued;
+        private const CalculationStage INC = CalculationStage.IncCalcQueued;
+        private const CalculationStage AVG = CalculationStage.AvgCalculated;
+        private const CalculationStage TWR = CalculationStage.TwrCalcQueued;
+        private const CalculationStage STD = CalculationStage.StdCalcQueued;
+        private const CalculationStage BENCH = CalculationStage.HasBenchmarks;
+
         private readonly EfficiencyQuery _effQuery;
         private readonly List<EfficiencyRecord> _effSeries;
         private readonly Efficiency _eff;
@@ -21,6 +33,8 @@ namespace InvestmentEfficiency
         private Func<double>? _shrCalcHandler;
         private Func<double>? _infCalcHandler;
 
+        private Task? _benchCalcHandler;
+
         /// <summary>
         ///     Initializes efficiency configurer using info from <see cref="EfficiencyQuery"/>.
         /// </summary>
@@ -33,8 +47,9 @@ namespace InvestmentEfficiency
             _effSeries = CalculateGrowthRates().ToList();
             _stage |= CalculationStage.GrrCalcQueued;
         }
+
         /// <summary>
-        ///     Initializes efficiency configurer using info from <see cref="EfficiencyQuery"/>. 
+        ///     Initializes efficiency configurer using info from <see cref="EfficiencyQuery"/> and <see cref="EfficiencyBenchmarks"/>. 
         /// </summary>
         /// <param name="effQuery">Efficiency query.</param>
         public EfficiencyConfigurer(EfficiencyQuery effQuery, EfficiencyBenchmarks benchmarks) : this(effQuery)
@@ -70,10 +85,7 @@ namespace InvestmentEfficiency
                     - first.Portfolio!.Value
                     - _effSeries.Sum(effs => effs.Flow!.Value)
                     - _effSeries.Sum(effs => effs.Commision!.Value)
-                    + first.Flow!.Value + first.Commision!.Value ;
-
-                //if (first.Date.Day == 31 && first.Date.Month == 12)
-                //    inc -= first.Portfolio!.Value + first.Flow!.Value;
+                    + first.Flow!.Value + first.Commision!.Value;
                 
                 return inc;
             };
@@ -107,7 +119,7 @@ namespace InvestmentEfficiency
         {
             if (_effSeries.Count == 0) return this;
 
-            if (!_stage.HasFlag(CalculationStage.GrrCalcQueued | CalculationStage.LftCalcQueued))
+            if (!_stage.HasFlag(GRR | LFT))
                 throw new Exception("Growth rates and Life-time should be calculated before the time-weighted rate of return (TWR).");
 
             _twrCalcHandler = () =>
@@ -131,7 +143,7 @@ namespace InvestmentEfficiency
         {
             if (_effSeries.Count == 0) return this;
 
-            if (!_stage.HasFlag(CalculationStage.IncCalcQueued | CalculationStage.AvgCalculated | CalculationStage.LftCalcQueued))
+            if (!_stage.HasFlag(INC | AVG | LFT))
                 throw new Exception("Income, average portfolio and Life-time should be calculated before the money-weighted rate of return (MWR).");
 
             _mwrCalcHandler = () => _eff.Income!.Value 
@@ -149,7 +161,7 @@ namespace InvestmentEfficiency
         {
             if (_effSeries.Count == 0) return this;
 
-            if (!_stage.HasFlag(CalculationStage.GrrCalcQueued))
+            if (!_stage.HasFlag(GRR))
                 throw new Exception("Growth rates should be calculated before the standard deviation (STD).");
 
             _stdCalcHandler = () =>
@@ -164,6 +176,14 @@ namespace InvestmentEfficiency
             return this;
         }
 
+        /// <summary>
+        ///     Adds Sharpe coefficient to calculation.
+        /// </summary>
+        public EfficiencyConfigurer AddSharpeCalculation()
+        {
+            return AddSharpeCalculation(_eff.Benchmarks!.RiskFreeRate);
+        }
+
 
         /// <summary>
         ///     Adds Sharpe coefficient to calculation.
@@ -172,8 +192,8 @@ namespace InvestmentEfficiency
         {
             if (_effSeries.Count == 0) return this;
 
-            if (!_stage.HasFlag(CalculationStage.TwrCalcQueued | CalculationStage.StdCalcQueued))
-                throw new Exception("TWR and STD rates should be calculated before the Sharpe coefficient.");
+            if (!_stage.HasFlag(TWR | STD | BENCH))
+                throw new Exception("TWR and STD rates and benchmarks should be calculated before the Sharpe coefficient.");
 
             _shrCalcHandler = () =>            
                 (_eff.Twr!.Value - riskFreeRate) / _eff.Std!.Value;
@@ -190,16 +210,38 @@ namespace InvestmentEfficiency
         {
             if (_effSeries.Count == 0) return this;
 
-            if (!_stage.HasFlag(CalculationStage.TwrCalcQueued | CalculationStage.StdCalcQueued))
-                throw new Exception("TWR and STD rates should be calculated before the Sharpe coefficient.");
+            if (!_stage.HasFlag(TWR | STD | BENCH))
+                throw new Exception("TWR and STD rates and benchmarks should be calculated before the Sharpe coefficient.");
 
             _infCalcHandler = () =>
                 (_eff.Twr!.Value - indexTwr) / _eff.Std!.Value;
 
+            return this;
+        }
+
+        public EfficiencyConfigurer AddBenchmarksCalculation(EfirClient efir)
+        {
+
+            _benchCalcHandler = new Task(async () =>
+            {
+                if(efir.IsLoggedIn is false)
+                    await efir.LoginAsync();
+
+                var bench = await EfficiencyBenchmarks.CalculateBenchmarks(_eff.Details!.StartDate!.Value, _eff.Details!.EndDate!.Value, efir);
+                _eff.Benchmarks = bench;
+            });
+
+            _stage |= CalculationStage.HasBenchmarks;
 
             return this;
         }
 
+        public EfficiencyConfigurer UseBenchmarks(EfficiencyBenchmarks benchmarks)
+        {
+            _eff.Benchmarks = benchmarks;
+            _stage |= CalculationStage.HasBenchmarks;
+            return this;
+        }
 
         /// <summary>
         ///     Calculates investment efficiency.
@@ -208,7 +250,8 @@ namespace InvestmentEfficiency
         ///     Instance of <see cref="Efficiency"/> class.
         /// </returns>
         public Efficiency Calculate()
-        {            
+        {
+            _benchCalcHandler?.Wait();
             _eff.EfficiencySeries = _effSeries;
             _eff.LifeTime = _lftCalcHandler?.Invoke();
             _eff.Income = _incCalcHandler?.Invoke();

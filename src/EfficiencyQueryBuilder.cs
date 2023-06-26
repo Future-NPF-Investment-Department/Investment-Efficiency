@@ -283,7 +283,11 @@ namespace InvestmentEfficiency
                 Commision = effs.Commision ?? default,
             }).OrderBy(effrec => effrec.Date);
 
-            return new EfficiencyQuery(efficiencySeriesWihoutNulls, _details);
+            return new EfficiencyQuery(efficiencySeriesWihoutNulls, _details)
+            {
+                AssetsSubquery = _assets.GetQuery(),
+                FlowsSubquery = _flows.GetQuery(),
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using InvestmentDataContext;
+using InvestmentDataContext.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Linq.Expressions;
@@ -26,6 +27,16 @@ namespace InvestmentEfficiency
         public EfficiencyQuery(IQueryable<EfficiencyRecord> query) : this(query, EfficiencyQueryDetails.Empty)
         {          
         }
+
+        /// <summary>
+        ///     Asset value (portfolio) subquery used to construct this efficiency query.
+        /// </summary>
+        public IQueryable<AssetValue>? AssetsSubquery { get; init; }
+
+        /// <summary>
+        ///     Asset flows subquery used to construct this efficiency query.
+        /// </summary>
+        public IQueryable<AssetFlow>? FlowsSubquery { get; init; }
 
         public Type ElementType 
             => _query.ElementType;
@@ -59,7 +70,10 @@ namespace InvestmentEfficiency
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
-
+    
+        /// <summary>
+        ///     Returns translated SQL-query.
+        /// </summary>
         public override string ToString()
             => _query.ToQueryString();
 
@@ -68,7 +82,16 @@ namespace InvestmentEfficiency
         /// </summary>
         public EfficiencyQueryDetails GetDetails()
             => _details;
-            
         
+        /// <summary>
+        ///     Get unique isins from query.
+        /// </summary>
+        /// <returns></returns>
+        public string[] GetUniqueIsins()
+        {
+            return AssetsSubquery is null
+                ? Array.Empty<string>() 
+                : AssetsSubquery.Select(av => av.Isin).Distinct().ToArray();
+        }
     }
 }

@@ -7,6 +7,8 @@ namespace InvestmentEfficiency
     /// </summary>
     public record EfficiencyQueryDetails
     {
+        public static readonly EfficiencyQueryDetails Empty = new();
+
         /// <summary>
         ///     Efficiency calculation start date.
         /// </summary>

@@ -13,12 +13,21 @@ namespace InvestmentEfficiency
         private readonly FlowsQueryBuilder _flows;
         private readonly EfficiencyQueryDetails _details;
 
-        public EfficiencyQueryBuilder(string? connectionString)
-        {
-            if (connectionString is not null)
-                InvestmentDataManager.UseConnectionString(connectionString);
-            _assets = InvestmentDataManager.NewAssetsQuery();
-            _flows = InvestmentDataManager.NewFlowsQuery();
+        public EfficiencyQueryBuilder(InvestmentData context)
+        {// ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+            // <----------------------------------------------------------------------------------------------------------- NEED REFACTORING HERE-------- !!!!!!!!!!!!!!!!!
+            //-------------------------------------------------------------------------------------------------------------------------------------------------------------
+            // инстанцировать билдеры надо с помощью статисеских методов InvestmentDataManager
+            // эти методы должны принимать в качестве параметра UnvestmentData конткст !! 
+            // иначе на каждый билдер приходится по отдельному контексту,
+            // ошибка возникает в методе CalculateGrowthRates класса EfficiencyConfigurer
+            // эта ошибка отложенная и изначально проявляется в конфигурации запроса join 
+            // где объединяем СЧА и потоки (метод GenerateQuery этого класса)
+            // выходит так что мы пытаемся сджоинить два сета данных, полученных из разных контекстов
+
+            // здесь временная затычка, но впринципе она и сама по себе нормально выглядит..
+            _assets = new AssetsQueryBuilder(context);              //InvestmentDataManager.NewAssetsQuery(context); 
+            _flows = new FlowsQueryBuilder(context);                //InvestmentDataManager.NewFlowsQuery(context);
             _details = new EfficiencyQueryDetails();
         }
 

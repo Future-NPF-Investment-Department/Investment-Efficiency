@@ -1,5 +1,6 @@
 ﻿#pragma warning disable IDE0090
 
+
 namespace InvestmentEfficiency
 {
     /// <summary>
@@ -58,6 +59,11 @@ namespace InvestmentEfficiency
         public EfficiencyQueryDetails? Details { get; set; }
 
         /// <summary>
+        ///     Efficiency time series.
+        /// </summary>
+        public List<EfficiencyRecord>? EfficiencySeries { get; set; } = null!;
+
+        /// <summary>
         ///     Initializes efficiency calculation configuration.
         /// </summary>
         public static EfficiencyConfigurer ConfigureEfficiencyCalculation(EfficiencyQuery query)
@@ -69,9 +75,23 @@ namespace InvestmentEfficiency
         public static EfficiencyConfigurer ConfigureEfficiencyCalculation(EfficiencyQuery query, EfficiencyBenchmarks benchmarks)
             => new EfficiencyConfigurer(query, benchmarks);
 
-        /// <summary>
-        ///     Efficiency time series.
-        /// </summary>
-        public List<EfficiencyRecord>? EfficiencySeries { get; set; } = null!;
+        public override string ToString()
+        {
+            string details = $"AM: {Details?.AmName}\nFUND: {Details?.FundName}\nPN/PR: {Details?.EntityType}\nSTR: {Details?.StrategyName}\nDDU: {Details?.Contract}\nASSET CL.: {Details?.AssetClass}\nRISK: {Details?.RiskType}\n";
+            string isins = "ISINs: ";
+            if (Details?.IsinList is not null)            
+                foreach (var isin in Details.IsinList) isins += $"{isin} ";            
+            isins += "\n\n";
+
+            string calcres = $"TWR: {Twr:0.00%}\nMWR: {Mwr:0.00%}\nSTD: {Std:0.00%}\nINC: {Income:n}\nAVG: {AverageProtfolio:n}\nLFT: {LifeTime}\n\n";
+            string series = string.Empty;
+            if (EfficiencySeries is not null)
+            {
+                foreach (var row in EfficiencySeries)
+                    series += $"{row.Date:dd.MM.yyyy} | {row.Portfolio:n} | {row.Flow:n} | {row.Commision:n} | {row.Growth:0.0%}\n";
+            }
+            return details + isins + calcres + series;
+        }
+
     }
 }

@@ -268,6 +268,7 @@ namespace InvestmentEfficiency
         private IEnumerable<EfficiencyRecord> CalculateGrowthRates()
         {
             double? prevPortfolio = default;
+            int index = 0;
             foreach (var effrec in _effQuery)
             {
                 yield return new EfficiencyRecord
@@ -276,21 +277,25 @@ namespace InvestmentEfficiency
                     Portfolio = effrec.Portfolio,
                     Flow = effrec.Flow,
                     Commision = effrec.Commision,
-                    Growth = CalculateGrowth(effrec.Portfolio!.Value, effrec.Flow!.Value, effrec.Commision!.Value)
+                    Growth = CalculateGrowth(effrec.Portfolio!.Value, effrec.Flow!.Value, effrec.Commision!.Value, index++)
                 };
 
                 prevPortfolio = effrec.Portfolio;
             }
 
-            double CalculateGrowth(double portfolio, double flow, double commision)
+            double CalculateGrowth(double portfolio, double flow, double commision, int index)
             {
-                if (Math.Floor(portfolio / 1000) > 10
-                    && Math.Floor(portfolio / 1000) - Math.Floor(flow / 1000) is 0.0
-                    || prevPortfolio is null || prevPortfolio is 0.0) return 1.0;
+                if (prevPortfolio is null || prevPortfolio is 0.0)
+                {
+                    if (index == 0) 
+                        return 1;
+                    if (Math.Floor(portfolio / 1000) - Math.Floor(flow / 1000) is 0.0)
+                        return 1.0;
 
-                //if(prevPortfolio is null) return 1.0;
+                    return (portfolio - flow - commision) / 0.000000001;
+                }
 
-                return (portfolio - flow - commision) / prevPortfolio.Value;
+                return (portfolio - flow - commision) / prevPortfolio!.Value;
             }
         }
 

@@ -32,6 +32,8 @@ namespace InvestmentEfficiency
         public double StdIndex4 { get; set; }
         public double StdIndex5 { get; set; }
 
+        public static EfficiencyBenchmarks Default = new EfficiencyBenchmarks();
+
         public static void UseBenchmarks(params string[] benchmarks)
         {
             if (benchmarks.Length > 5)
@@ -59,7 +61,7 @@ namespace InvestmentEfficiency
             var tenor = (end - start).Days / 365.0;
             bench.RiskFreeRate = await efir.CalculateGcurveForDate(curveDate, tenor);
 
-            var his = await efir.GetMoexIndexHistoryAsync(start, end, bench.NameIndex1, bench.NameIndex2, bench.NameIndex3, bench.NameIndex4, bench.NameIndex5);
+            var his = await efir.GetMoexIndexHistoryAsync(start, end, _benchmarks);
 
             var index1his = his.Where(hf => hf.secid == bench.NameIndex1).AsQueryable();
             var index2his = his.Where(hf => hf.secid == bench.NameIndex2).AsQueryable();

@@ -62,7 +62,8 @@ namespace InvestmentEfficiency
             InvestmentData context = _connstr is not null
                 ? new InvestmentData(_connstr)
                 : new InvestmentData();
-            return new(context);
+            context.Database.SetCommandTimeout(500);
+            return new EfficiencyQueryBuilder(context);
         }
 
         public IEnumerator<EfficiencyRecord> GetEnumerator()

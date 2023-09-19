@@ -9,6 +9,9 @@ using CsvHelper.Configuration;
 
 namespace InvestmentEfficiency
 {
+    /// <summary>
+    ///     Represents csv mapping for efficiency results.
+    /// </summary>
     public class EfficiencyCsvMapping : ClassMap<Efficiency>
     {
         public EfficiencyCsvMapping(CsvConfiguration config)

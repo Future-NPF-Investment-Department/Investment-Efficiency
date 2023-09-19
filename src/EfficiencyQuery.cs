@@ -1,5 +1,5 @@
-﻿using InvestmentDataContext;
-using InvestmentDataContext.Entities;
+﻿using InvestmentData.Context;
+using InvestmentData.Context.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Linq.Expressions;
@@ -59,9 +59,9 @@ namespace InvestmentEfficiency
         /// </summary>
         public static EfficiencyQueryBuilder ConfigureNew()
         {
-            InvestmentData context = _connstr is not null
-                ? new InvestmentData(_connstr)
-                : new InvestmentData();
+            InvestmentDataContext context = _connstr is not null
+                ? new InvestmentDataContext(_connstr)
+                : new InvestmentDataContext();
             context.Database.SetCommandTimeout(500);
             return new EfficiencyQueryBuilder(context);
         }

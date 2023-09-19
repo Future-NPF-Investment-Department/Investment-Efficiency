@@ -1,4 +1,4 @@
-﻿using InvestmentDataContext.Classifications;
+﻿using InvestmentData.Classifications;
 
 namespace InvestmentEfficiency
 {

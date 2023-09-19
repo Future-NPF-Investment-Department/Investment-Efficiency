@@ -1,6 +1,7 @@
-﻿using InvestmentDataContext;
-using InvestmentDataContext.Classifications;
-using InvestmentDataContext.SqlServer;
+﻿using InvestmentData;
+using InvestmentData.Context;
+using InvestmentData.Classifications;
+using InvestmentData.SqlServer;
 
 namespace InvestmentEfficiency
 {
@@ -13,7 +14,7 @@ namespace InvestmentEfficiency
         private readonly FlowsQueryBuilder _flows;
         private readonly EfficiencyQueryDetails _details;
 
-        public EfficiencyQueryBuilder(InvestmentData context)
+        public EfficiencyQueryBuilder(InvestmentDataContext context)
         {// ---------------------------------------------------------------------------------------------------------------------------------------------------------------
             // <----------------------------------------------------------------------------------------------------------- NEED REFACTORING HERE-------- !!!!!!!!!!!!!!!!!
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------

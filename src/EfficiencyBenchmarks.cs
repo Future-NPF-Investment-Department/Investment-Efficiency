@@ -4,6 +4,9 @@ using RuDataAPI.Extensions;
 
 namespace InvestmentEfficiency
 {
+    /// <summary>
+    ///     Represents benchmark parameters for efficiency calculation.
+    /// </summary>
     public class EfficiencyBenchmarks
     {
         private static readonly string[] _benchmarks = new string[5]
@@ -34,6 +37,12 @@ namespace InvestmentEfficiency
 
         public static EfficiencyBenchmarks Default = new EfficiencyBenchmarks();
 
+        /// <summary>
+        ///     Force <see cref="EfficiencyBenchmarks"/> to use specified list of benchmarks. 
+        ///     Default benchmarks are RUPCI, RUPMI, RUPAI, IMOEX and RUCBTR3A3YNS indexes.
+        /// </summary>
+        /// <param name="benchmarks"></param>
+        /// <exception cref="IndexOutOfRangeException"></exception>
         public static void UseBenchmarks(params string[] benchmarks)
         {
             if (benchmarks.Length > 5)
@@ -43,6 +52,9 @@ namespace InvestmentEfficiency
                 _benchmarks[i] = benchmarks[i];
         }
         
+        /// <summary>
+        ///     Calculates efficiency metrics for benchmarks.
+        /// </summary>
         public static async Task<EfficiencyBenchmarks> CalculateBenchmarks(DateTime start, DateTime end, EfirClient efir)
         {
             var bench = new EfficiencyBenchmarks()
